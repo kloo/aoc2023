@@ -2,17 +2,23 @@
 
 #>
 
-$strarray = Get-Content testin.txt
+$strarray = Get-Content ina.txt
 $answer = 0
 
 $inputLen = $strarray.Length
 $inputArray = New-Object int[] $inputLen
 
-Function Test-Func {
+Function Find-FirstNum {
     Param (
-        [System.Collections.Specialized.OrderedDictionary] $playerOneDeck,
-        [System.Collections.Specialized.OrderedDictionary] $playerTwoDeck
+        [String] $inputLine
     )
+
+    for ($i = 0; $i -lt $inputLine.Length;$i++) {
+        $inputString = [String] $inputLine[$i]
+        if ($inputString -like "[0-9]") {
+            return [int[]] @($i,$inputString)
+        }
+    }
     
 }
 
@@ -30,23 +36,15 @@ foreach ($line in $strarray) {
 
     #Find first num
     $notFound = $true
-    $pos = 0
-    while ($notFound) {
-        $currChar = $line[$pos]
-        if ($currChar -like "[0-9]") {
-            $firstNumChar = [int] [String] $currChar
-            $firstNumCharPos = $pos
-            $notFound = $false
-        }
-        $pos++
-    }
+
+    $firstNumCharPos,$firstNumChar = Find-FirstNum $line
 
     $firstNumStrPos = $line.Length
+    $currNum = 1
     foreach ($num in $numStrArray) {
-        $currNum = 1
         $pos = $line.IndexOf($num)
         if ( ($pos -gt -1) -and ($pos-lt $firstNumStrPos)) {
-            $firstNumStrPos = $line.IndexOf($num)
+            $firstNumStrPos = $pos
             $firstNumStr = $currNum
         }
         $currNum++
@@ -59,28 +57,18 @@ foreach ($line in $strarray) {
     }
 
     #Find last num
-    $notFound = $true
-    $pos = $line.Length - 1
-    while ($notFound) {
-        $currChar = $line[$pos]
-        if ($currChar -like "[0-9]") {
-            $lastNumChar = [int] [String] $currChar
-            $lastNumCharPos = $pos
-            $notFound = $false
-        }
-        $pos--
-    }
-    $lastNumCharPos = $line.Length - $lastNumCharPos
-
-    $revLine += $line[-1..(-$line.Length)] -join ''
-
+    $revLine = $line[-1..(-$line.Length)] -join ''
+    
+    $lastNumCharPos,$lastNumChar = Find-FirstNum $revLine
+    
     $lastNumStrPos = $line.Length
+    $currNum = 1
     foreach ($num in $revNumStrArray) {
-        $currNum = 1
         $pos = $revLine.IndexOf($num)
         if (($pos -gt -1) -and ($pos -lt $lastNumStrPos)) {
-            $lastNumStrPos = $revLine.IndexOf($num)
+            $lastNumStrPos = $pos
             $lastNumStr = $currNum
+            #Write-Host "$pos $currNum"
         }
         $currNum++
     }
@@ -92,9 +80,9 @@ foreach ($line in $strarray) {
     }
 
 
-    WRite-Host "$firstNumCharPos : $firstNumChar , $firstNumStrPos : $firstNumStr , $lastNumCharPos : $lastNumChar , $lastNumStrPos : $lastNumStr"
+    Write-Host "$line ... $firstNumCharPos : $firstNumChar , $firstNumStrPos : $firstNumStr , $lastNumCharPos : $lastNumChar , $lastNumStrPos : $lastNumStr"
     $currNum = (10*$firstNum) + $lastNum
-    Write-Host $currNum
+    #Write-Host $currNum
     $answer += $currNum
 }
 
